@@ -22,3 +22,7 @@ export function formatKeyCombo(combo: KeyCombo): string {
 
 	return parts.join(" + ");
 }
+
+export function formatKeyCombos(combos: KeyCombo[]): string {
+	return combos.map(formatKeyCombo).join(" → ");
+}

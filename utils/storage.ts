@@ -6,7 +6,17 @@ const STORAGE_KEY = "shortcuts";
 
 export async function getShortcuts(): Promise<Shortcut[]> {
 	const result = await browser.storage.sync.get(STORAGE_KEY);
-	return (result[STORAGE_KEY] as Shortcut[] | undefined) ?? [];
+	const raw =
+		(result[STORAGE_KEY] as Record<string, unknown>[] | undefined) ?? [];
+	return raw.map((shortcut) => {
+		if ("keyCombo" in shortcut && !("keyCombos" in shortcut)) {
+			const { keyCombo, ...rest } = shortcut as Record<string, unknown> & {
+				keyCombo: unknown;
+			};
+			return { ...rest, keyCombos: [keyCombo] } as unknown as Shortcut;
+		}
+		return shortcut as unknown as Shortcut;
+	});
 }
 
 export async function addShortcut(shortcut: Shortcut): Promise<void> {

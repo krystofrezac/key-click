@@ -1,4 +1,4 @@
-import { formatKeyCombo } from "@/utils/keyCombo";
+import { formatKeyCombos } from "@/utils/keyCombo";
 import type { Shortcut } from "@/utils/types";
 
 interface Props {
@@ -27,7 +27,7 @@ export function ShortcutList({ shortcuts, onDelete }: Props) {
 							{shortcut.name}
 						</span>
 						<span className="bg-neutral-700 px-2 py-0.5 rounded text-xs font-mono text-white self-start">
-							{formatKeyCombo(shortcut.keyCombo)}
+							{formatKeyCombos(shortcut.keyCombos)}
 						</span>
 						<code className="text-neutral-400 text-xs truncate">
 							{shortcut.selector}

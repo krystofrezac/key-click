@@ -9,7 +9,7 @@ export interface KeyCombo {
 export interface Shortcut {
 	id: string;
 	name: string;
-	keyCombo: KeyCombo;
+	keyCombos: KeyCombo[];
 	selector: string;
 	urlPattern: string;
 }

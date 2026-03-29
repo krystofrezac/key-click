@@ -1,6 +1,5 @@
 import {
 	addShortcut,
-	getShortcuts,
 	getShortcutsForUrl,
 	removeShortcut,
 } from "@/utils/storage";
@@ -11,7 +10,6 @@ import { ShortcutList } from "./components/ShortcutList";
 function App() {
 	const [currentUrl, setCurrentUrl] = useState<string>("");
 	const [filteredShortcuts, setFilteredShortcuts] = useState<Shortcut[]>([]);
-	const [allShortcuts, setAllShortcuts] = useState<Shortcut[]>([]);
 
 	// Load current tab URL and shortcuts on mount
 	useEffect(() => {
@@ -23,8 +21,6 @@ function App() {
 			const url = tabs[0]?.url ?? "";
 			setCurrentUrl(url);
 
-			const all = await getShortcuts();
-			setAllShortcuts(all);
 			const filtered = await getShortcutsForUrl(url);
 			setFilteredShortcuts(filtered);
 		}
@@ -35,8 +31,6 @@ function App() {
 	useEffect(() => {
 		const listener = async (_changes: unknown, areaName: string) => {
 			if (areaName !== "sync") return;
-			const all = await getShortcuts();
-			setAllShortcuts(all);
 			if (currentUrl) {
 				const filtered = await getShortcutsForUrl(currentUrl);
 				setFilteredShortcuts(filtered);
@@ -72,7 +66,7 @@ function App() {
 				<h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wide mb-2">
 					Add Shortcut
 				</h2>
-				<ShortcutForm onAdd={handleAdd} existingShortcuts={allShortcuts} />
+				<ShortcutForm onAdd={handleAdd} />
 			</section>
 		</div>
 	);

@@ -3,16 +3,15 @@ import { KeyRecorder } from "./KeyRecorder";
 
 interface Props {
 	onAdd: (shortcut: Shortcut) => void;
-	existingShortcuts: Shortcut[];
 }
 
 const inputClass =
 	"w-full bg-neutral-700 border border-neutral-600 rounded px-3 py-2 text-white text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500";
 const labelClass = "text-sm text-neutral-300 mb-1";
 
-export function ShortcutForm({ onAdd, existingShortcuts }: Props) {
+export function ShortcutForm({ onAdd }: Props) {
 	const [name, setName] = useState("");
-	const [keyCombo, setKeyCombo] = useState<KeyCombo | null>(null);
+	const [keyCombos, setKeyCombos] = useState<KeyCombo[]>([]);
 	const [selector, setSelector] = useState("");
 	const [urlPattern, setUrlPattern] = useState("");
 	const [error, setError] = useState("");
@@ -21,31 +20,14 @@ export function ShortcutForm({ onAdd, existingShortcuts }: Props) {
 		e.preventDefault();
 		setError("");
 
-		if (!name || !keyCombo || !selector || !urlPattern) {
+		if (!name || keyCombos.length === 0 || !selector || !urlPattern) {
 			setError("All fields are required");
 			return;
 		}
 
-		const isDuplicate = existingShortcuts.some(
-			(s) =>
-				s.urlPattern === urlPattern &&
-				s.keyCombo.key === keyCombo.key &&
-				s.keyCombo.ctrlKey === keyCombo.ctrlKey &&
-				s.keyCombo.shiftKey === keyCombo.shiftKey &&
-				s.keyCombo.altKey === keyCombo.altKey &&
-				s.keyCombo.metaKey === keyCombo.metaKey,
-		);
-
-		if (isDuplicate) {
-			setError(
-				"A shortcut with this key combination already exists for this URL pattern",
-			);
-			return;
-		}
-
-		onAdd({ id: crypto.randomUUID(), name, keyCombo, selector, urlPattern });
+		onAdd({ id: crypto.randomUUID(), name, keyCombos, selector, urlPattern });
 		setName("");
-		setKeyCombo(null);
+		setKeyCombos([]);
 		setSelector("");
 		setUrlPattern("");
 	};
@@ -69,7 +51,7 @@ export function ShortcutForm({ onAdd, existingShortcuts }: Props) {
 				{/* biome-ignore lint/a11y/noLabelWithoutControl: KeyRecorder is a custom control */}
 				<label className={labelClass}>
 					Key combination
-					<KeyRecorder value={keyCombo} onChange={setKeyCombo} />
+					<KeyRecorder value={keyCombos} onChange={setKeyCombos} />
 				</label>
 			</div>
 			<div>
