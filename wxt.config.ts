@@ -1,9 +1,13 @@
-import { defineConfig } from 'wxt';
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "wxt";
 
 export default defineConfig({
-  modules: ['@wxt-dev/module-react'],
-  vite: () => ({
-    plugins: [tailwindcss()],
-  }),
+	modules: ["@wxt-dev/module-react"],
+	vite: () => ({
+		plugins: [tailwindcss()],
+	}),
+	manifest: {
+		permissions: ["storage", "activeTab", "scripting"],
+		host_permissions: ["<all_urls>"],
+	},
 });

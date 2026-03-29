@@ -1,37 +1,75 @@
-import { useState } from 'react';
-import reactLogo from '@/assets/react.svg';
-import wxtLogo from '/wxt.svg';
+import {
+	addShortcut,
+	getShortcutsForUrl,
+	removeShortcut,
+} from "@/utils/storage";
+import type { Shortcut } from "@/utils/types";
+import { ShortcutForm } from "./components/ShortcutForm";
+import { ShortcutList } from "./components/ShortcutList";
 
 function App() {
-  const [count, setCount] = useState(0);
+	const [currentUrl, setCurrentUrl] = useState<string>("");
+	const [filteredShortcuts, setFilteredShortcuts] = useState<Shortcut[]>([]);
 
-  return (
-    <div className="max-w-[1280px] mx-auto p-8 text-center">
-      <div>
-        <a href="https://wxt.dev" target="_blank" className="font-medium text-[#646cff] no-underline hover:text-[#535bf2]">
-          <img src={wxtLogo} className="h-[6em] p-[1.5em] will-change-[filter] transition-[filter] duration-300 hover:drop-shadow-[0_0_2em_#54bc4ae0]" alt="WXT logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" className="font-medium text-[#646cff] no-underline hover:text-[#535bf2]">
-          <img src={reactLogo} className="h-[6em] p-[1.5em] will-change-[filter] transition-[filter] duration-300 hover:drop-shadow-[0_0_2em_#61dafbaa]" alt="React logo" />
-        </a>
-      </div>
-      <h1 className="text-[3.2em] leading-tight">WXT + React</h1>
-      <div className="p-[2em]">
-        <button
-          onClick={() => setCount((count) => count + 1)}
-          className="rounded-lg border border-transparent px-[1.2em] py-[0.6em] text-base font-medium bg-[#1a1a1a] cursor-pointer transition-[border-color] duration-250 hover:border-[#646cff]"
-        >
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="text-[#888]">
-        Click on the WXT and React logos to learn more
-      </p>
-    </div>
-  );
+	// Load current tab URL and shortcuts on mount
+	useEffect(() => {
+		async function init() {
+			const tabs = await browser.tabs.query({
+				active: true,
+				currentWindow: true,
+			});
+			const url = tabs[0]?.url ?? "";
+			setCurrentUrl(url);
+
+			const filtered = await getShortcutsForUrl(url);
+			setFilteredShortcuts(filtered);
+		}
+		init();
+	}, []);
+
+	// Listen for storage changes to keep list in sync
+	useEffect(() => {
+		const listener = async (_changes: unknown, areaName: string) => {
+			if (areaName !== "sync") return;
+			if (currentUrl) {
+				const filtered = await getShortcutsForUrl(currentUrl);
+				setFilteredShortcuts(filtered);
+			}
+		};
+
+		browser.storage.onChanged.addListener(listener);
+		return () => {
+			browser.storage.onChanged.removeListener(listener);
+		};
+	}, [currentUrl]);
+
+	const handleAdd = useCallback(async (shortcut: Shortcut) => {
+		await addShortcut(shortcut);
+	}, []);
+
+	const handleDelete = useCallback(async (id: string) => {
+		await removeShortcut(id);
+	}, []);
+
+	return (
+		<div className="p-4">
+			<h1 className="text-lg font-bold mb-3">Key-Click</h1>
+
+			<section className="mb-4">
+				<h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wide mb-2">
+					Shortcuts
+				</h2>
+				<ShortcutList shortcuts={filteredShortcuts} onDelete={handleDelete} />
+			</section>
+
+			<section>
+				<h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wide mb-2">
+					Add Shortcut
+				</h2>
+				<ShortcutForm onAdd={handleAdd} />
+			</section>
+		</div>
+	);
 }
 
 export default App;
